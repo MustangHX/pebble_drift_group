@@ -20,5 +20,8 @@ int main(){
 		pebble[i][j]=pebble[i][j+1]*velocity[i][j+1]*dt/dr;
 		}
 	}
+	for(i=0;i<10;i++){
+		drift_t(peb_group[i],1.0);
+		}
     return 1;
 }

@@ -1,1 +1,1 @@
-double pebble[100][100];
+double peb_cont[100][100];

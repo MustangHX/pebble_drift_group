@@ -13,6 +13,12 @@ else return sqrt(9*tau*viscosity(r)*density(r)/(2*w_K(r)*rho_peb0));
 
 }
 
+struct pebble{
+	double rad[10000];
+	double size[10000];
+	double time[10000];
+	double vr[10000];
+} peb_group[10];
 
 double group(int argc){
 
@@ -21,7 +27,7 @@ double group(int argc){
 		size=drag_group(i*1.0+0.5,0.01);
 		for(j=0;j<100;j++){
 			if(j==(int)(size*10)){
-				pebble[i][j]=i*1.0*2*M_PI*dr;
+				peb_cont[i][j]=i*1.0*2*M_PI*dr;
 			}
 		}
 	}

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#define dt 10.0  //time step in yr
 #define output_size "peb_size.txt"
 #define output_time "001alpha1cm100AU001AU1sun01acc.txt"
 #define output_time "drift_test0.txt"
@@ -366,7 +367,7 @@ double *v_r3(double r, double a_pb){
 int drift(double r_start, double a_pebble, double coag_eff)
 {
     
-    int i=0,j=0,k=0,l=0;
+    int i=0,j=0,k=0,l=0,ll=0;
     FILE *fp_vr,*fp_drt,*fp_size;
     fp_vr=fopen("drift_velocity", "w");
     fp_drt=fopen(output_time,"w");
@@ -564,6 +565,151 @@ int drift(double r_start, double a_pebble, double coag_eff)
         
     }
     sum1=sum1*AU_km/yr_sec;
+    printf("%0.10f\n", sum1);
+    printf("%0.10f\n", tau_fric0(1.0,a_pb1));
+    printf("%0.10f\n", v_K(0.01516));
+    printf("%0.10f\n", yeta(0.01516));
+    
+    
+    
+    return 0;
+}
+
+
+
+int drift_t(pebble *pp, double coag_eff)
+{
+    
+    int i=0,j=0,k=0,l=0,ll=0;
+    FILE *fp_vr,*fp_drt,*fp_size;
+    fp_vr=fopen("drift_velocity", "w");
+    fp_drt=fopen(output_time,"w");
+    fp_size=fopen(output_size,"w");
+    
+    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,coag_eff,tmp1,tmp2,time_tot=0.0;;
+    double k1,k2,k3,k4,step,sum1=0.0;
+    x0=pp->rad[0];
+    
+    x1=r_in;x=x0;y=0.0;
+    //coag_eff=EFF;
+    step=-1.0*step0;
+    a_pb2=a_pebble;
+    while (x>x1) {
+        if(tau_temp <1e8 || 1)
+        {
+            j=0;
+            a_pb1=a_pb2;
+            Re1=Reynolds(x,v_r0(x,a_pb1),tau_fric0(x,a_pb1),a_pb1);
+            Re2=0.0;
+            if (Re1 >2.0) {
+                Re2=Reynolds(x, v_r2(x,a_pb1)[0],v_r2(x,a_pb1)[1],a_pb1);
+            }
+            while (fabs(Re1-Re2)>0.001*fabs(Re1)){
+                Re1=Re2;
+                if (a_pb1 < 2.25*mean_path(x)) {
+                    Re2=Reynolds(x, v_r0(x,a_pb1),tau_fric0(x,a_pb1),a_pb1);
+                }
+                else if (Re1 <= 1.0 && 1){
+                    Re2=Reynolds(x, v_r1(x,a_pb1),tau_fric0(x,a_pb1),a_pb1);
+                    
+                }
+                else if (Re1 <=800.0 && Re1>1.0 && 1 ) {
+                    Re2=Reynolds(x, v_r2(x,a_pb1)[0],v_r2(x,a_pb1)[1],a_pb1);
+                    
+                }
+                else if (Re1 > 800.0 && 1 ){
+                    Re2=Reynolds(x, v_r3(x,a_pb1)[0],v_r3(x,a_pb1)[1],a_pb1);
+                }
+                j++;
+                if (j>11) {
+                }
+                
+            }
+            
+            if (a_pb1 < 2.25*mean_path(x)) {
+                vr0=v_r0(x,a_pb1);
+                vr1=v_r0(x+0.5*step,a_pb1);
+                vr2=v_r0(x+step,a_pb1);
+            }
+            else if (Re2<=1.0 && 1){
+                vr0=v_r1(x,a_pb1);
+                vr1=v_r1(x+0.5*step,a_pb1);
+                vr2=v_r1(x+step,a_pb1);
+            }
+            else if (Re2 < 800.0 && Re2>1.0 && 1 ) {
+                vr0=v_r2(x,a_pb1)[0];
+                vr1=v_r2(x+0.5*step,a_pb1)[0];
+                vr2=v_r2(x+step,a_pb1)[0];
+            }
+            else if (Re2 >800.0 && 1 ){
+                vr0=v_r3(x,a_pb1)[0];
+                vr1=v_r3(x+0.5*step,a_pb1)[0];
+                vr2=v_r3(x+step,a_pb1)[0];
+            }
+            if(fabs(vr0-vr2)>0.01*fabs(vr0)) {
+                step=step*0.8;
+                if (fabs(step) < 0.0001) step=-0.0001;
+            }
+            if (a_pb1 < 2.25*mean_path(x) && 1 ) {
+                vr0=v_r0(x,a_pb1);
+                vr1=v_r0(x+0.5*step,a_pb1);
+                vr2=v_r0(x+step,a_pb1);
+                tau=tau_fric0(x,a_pb1);
+            }
+            else if (Re2<=1.0 && 1){
+                vr0=v_r1(x,a_pb1);
+                vr1=v_r1(x+0.5*step,a_pb1);
+                vr2=v_r1(x+step,a_pb1);
+                tau=tau_fric0(x,a_pb1);
+            }
+            else if (Re2 < 800.0 && Re2>1.0 || 0 ) {
+                vr0=v_r2(x,a_pb1)[0];
+                vr1=v_r2(x+0.5*step,a_pb1)[0];
+                vr2=v_r2(x+step,a_pb1)[0];
+                tau=v_r2(x,a_pb1)[1];
+            }
+            else if (Re2 >800.0 && 1 ){
+                vr0=v_r3(x,a_pb1)[0];
+                vr1=v_r3(x+0.5*step,a_pb1)[0];
+                vr2=v_r3(x+step,a_pb1)[0];
+                tau=v_r3(x,a_pb1)[1];
+            }
+            tau_temp=tau;
+            k1=1.0/vr0;
+            k2=1.0/vr1;
+            k3=1.0/vr1;
+            k4=1.0/vr2;
+            y=y+step*(k1+2*k2+2*k3+k4)/6.0;
+	    x+=-vr0*dt/AU_km*yr_sec;
+	    time_tot=time_tot+dt;
+            fprintf(fp_vr, "%f\t%f\n",x,vr0);
+            fprintf(fp_drt, "%f\t%f\n",x,-1.0*sum1*AU_km/yr_sec);
+            fprintf(fp_size,"%f\t%f\n",x,a_pb1);
+            if (a_pb1>9.0/4.0*mean_path(x)) {
+                l++;
+                if(l==1) x_stop=x;
+                coag_eff=coag_eff*exp((x-x_stop)/0.001);
+                coag_eff=0.000;
+                
+            }
+            //vol_plus=-1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*step*(k1+2*k2+2*k3+k4)/6.0*AU_km*100000.0;
+            vol_plus=1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*dt*yr_sec/AU_km;
+	    if (0) vol_plus=0.0;
+            a_pb2=pow(((vol_plus*coag_eff*density(x)/rho_peb0+4.0/3.0*M_PI*a_pb1*a_pb1*a_pb1)*3.0/4.0/M_PI),0.33333333333333333);
+            pp->vr[ll]=vr0;
+	    pp->size[ll+1]=a_pb2;
+	    pp->rad[ll+1]=x;
+	    pp->time[ll+1]=time_tot;
+        
+    }
+    fclose(fp_vr);
+    fclose(fp_drt);
+    fclose(fp_size);
+    
+    
+    sum1=sum1*AU_km/yr_sec;
+    
+    
     printf("%0.10f\n", sum1);
     printf("%0.10f\n", tau_fric0(1.0,a_pb1));
     printf("%0.10f\n", v_K(0.01516));
