@@ -23,7 +23,7 @@ int main(){
 		}
 	}*/
 	for(i=0;i<10;i++){
-		drift_t(peb_group[i],1.0);
+		drift_t(&peb_group[i],1.0);
 		}
     return 1;
 }

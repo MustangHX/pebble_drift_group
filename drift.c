@@ -18,7 +18,7 @@
 #include "global_var.h"
 #define dt 10.0  //time step in yr
 #define output_size "peb_size.txt"
-#define output_time "001alpha1cm100AU001AU1sun01acc.txt"
+//#define output_time "001alpha1cm100AU001AU1sun01acc.txt"
 #define output_time "drift_test0.txt"
 #define EFF 0.0
 #define a_peb0 1.0 //radius in cm
@@ -725,6 +725,7 @@ int drift_t(PEBBLE *pp, double coag_eff)
     
     
     
-    return 0;
+    
 }
+return 0;
 }

@@ -1,4 +1,5 @@
 #include "global_var.h"
+#include "ex_func.h"
 void Init(){
 	int i;
 /*        for(i=0;i<100;i++){

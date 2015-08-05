@@ -1,7 +1,8 @@
 #include"global_ex.h"
 #include"ex_func.h"
 #include"global_var.h"
-
+#include<stdio.h>
+#include<math.h>
 double drag_group(double r, double tau){
 
 double a_peb;
