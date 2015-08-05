@@ -1,4 +1,6 @@
+#include "global_var.h"
 void Init(){
+	int i;
 /*        for(i=0;i<100;i++){
                 size=drag_group(i*1.0+0.5,0.01);
                 for(j=0;j<100;j++){		

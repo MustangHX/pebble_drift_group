@@ -4,7 +4,7 @@ all:
 #	gcc -c main.c
 #	gcc -c drift.c
 #	gcc -o main.o drift.o -o pebble
-	gcc *.c -o pebble
+	gcc *.c -o pebble #-lstdc++
 
 clean:
 	rm -rf *.o pebble

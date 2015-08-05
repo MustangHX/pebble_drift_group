@@ -6,8 +6,16 @@
 //
 //
 
+/*typedef struct PEBBLE{
+	        double rad[10000];
+		        double size[10000];
+			        double time[10000];
+				        double vr[10000];
+} PEBBLE;*/
+
 #include <stdio.h>
 #include <math.h>
+#include "global_var.h"
 #define dt 10.0  //time step in yr
 #define output_size "peb_size.txt"
 #define output_time "001alpha1cm100AU001AU1sun01acc.txt"
@@ -373,7 +381,7 @@ int drift(double r_start, double a_pebble, double coag_eff)
     fp_drt=fopen(output_time,"w");
     fp_size=fopen(output_size,"w");
     
-    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,coag_eff,tmp1,tmp2;
+    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,tmp1,tmp2;
     double k1,k2,k3,k4,step,sum1=0.0;
     x0=r_start;
     
@@ -577,7 +585,7 @@ int drift(double r_start, double a_pebble, double coag_eff)
 
 
 
-int drift_t(pebble *pp, double coag_eff)
+int drift_t(PEBBLE *pp, double coag_eff)
 {
     
     int i=0,j=0,k=0,l=0,ll=0;
@@ -586,14 +594,14 @@ int drift_t(pebble *pp, double coag_eff)
     fp_drt=fopen(output_time,"w");
     fp_size=fopen(output_size,"w");
     
-    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,coag_eff,tmp1,tmp2,time_tot=0.0;;
+    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,tmp1,tmp2,time_tot=0.0;;
     double k1,k2,k3,k4,step,sum1=0.0;
     x0=pp->rad[0];
     
     x1=r_in;x=x0;y=0.0;
     //coag_eff=EFF;
     step=-1.0*step0;
-    a_pb2=a_pebble;
+    a_pb2=pp->size[0];
     while (x>x1) {
         if(tau_temp <1e8 || 1)
         {
@@ -719,4 +727,4 @@ int drift_t(pebble *pp, double coag_eff)
     
     return 0;
 }
-
+}

@@ -1,5 +1,7 @@
 #include"global_ex.h"
 #include"ex_func.h"
+#include"global_var.h"
+
 double drag_group(double r, double tau){
 
 double a_peb;
@@ -13,15 +15,10 @@ else return sqrt(9*tau*viscosity(r)*density(r)/(2*w_K(r)*rho_peb0));
 
 }
 
-struct pebble{
-	double rad[10000];
-	double size[10000];
-	double time[10000];
-	double vr[10000];
-} peb_group[10];
 
 double group(int argc){
-
+	int i,j;
+	double size, dr;
 	return 1;
 	for(i=0;i<100;i++){
 		size=drag_group(i*1.0+0.5,0.01);
