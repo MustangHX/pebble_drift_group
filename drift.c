@@ -587,13 +587,12 @@ int drift(double r_start, double a_pebble, double coag_eff)
 
 int drift_t(PEBBLE *pp, double coag_eff)
 {
-    
+
     int i=0,j=0,k=0,l=0,ll=0;
     FILE *fp_vr,*fp_drt,*fp_size;
     fp_vr=fopen("drift_velocity", "w");
     fp_drt=fopen(output_time,"w");
     fp_size=fopen(output_size,"w");
-    
     double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,tmp1,tmp2,time_tot=0.0;;
     double k1,k2,k3,k4,step,sum1=0.0;
     x0=pp->rad[0];
@@ -694,38 +693,40 @@ int drift_t(PEBBLE *pp, double coag_eff)
             fprintf(fp_drt, "%f\t%f\n",x,-1.0*sum1*AU_km/yr_sec);
             fprintf(fp_size,"%f\t%f\n",x,a_pb1);
             if (a_pb1>9.0/4.0*mean_path(x)) {
-                l++;
-                if(l==1) x_stop=x;
-                coag_eff=coag_eff*exp((x-x_stop)/0.001);
+              //  l++;
+              //  if(l==1) x_stop=x;
+              //  coag_eff=coag_eff*exp((x-x_stop)/0.001);
                 coag_eff=0.000;
                 
             }
             //vol_plus=-1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*step*(k1+2*k2+2*k3+k4)/6.0*AU_km*100000.0;
-            vol_plus=1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*dt*yr_sec/AU_km;
-	    if (0) vol_plus=0.0;
+            vol_plus=1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*dt*yr_sec*AU_km;
+	   // if (0) vol_plus=0.0;
             a_pb2=pow(((vol_plus*coag_eff*density(x)/rho_peb0+4.0/3.0*M_PI*a_pb1*a_pb1*a_pb1)*3.0/4.0/M_PI),0.33333333333333333);
             pp->vr[ll]=vr0;
 	    pp->size[ll+1]=a_pb2;
 	    pp->rad[ll+1]=x;
 	    pp->time[ll+1]=time_tot;
+	    ll++;
         
     }
+    
+    
+//    printf("%0.10f\n", sum1);
+//    printf("%0.10f\n", tau_fric0(1.0,a_pb1));
+//    printf("%0.10f\n", v_K(0.01516));
+//    printf("%0.10f\n", yeta(0.01516));
+    
+    
+    
+    
+}
     fclose(fp_vr);
     fclose(fp_drt);
     fclose(fp_size);
     
     
     sum1=sum1*AU_km/yr_sec;
-    
-    
-    printf("%0.10f\n", sum1);
-    printf("%0.10f\n", tau_fric0(1.0,a_pb1));
-    printf("%0.10f\n", v_K(0.01516));
-    printf("%0.10f\n", yeta(0.01516));
-    
-    
-    
-    
-}
+
 return 0;
 }

@@ -7,3 +7,4 @@ double sound_sp(double argc);
 double viscosity(double argc);
 double mean_path( double argc);
 int drift_t(PEBBLE *argc1, double argc2);
+void Init();
