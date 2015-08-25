@@ -26,10 +26,10 @@ void Init(){
 
 	for(i=0;i<10;i++){
 		peb_group[i].size[0]=drag_group((i+1)*1.0,0.01);
-		peb_group[i].rad[0]=(i+1)*1.0;
-		peb_group[i].mass=(peb_group[i].rad[0]*peb_group[i].rad[0]-(peb_group[i].rad[0]-1.0)*(peb_group[i].rad[0]-1.0))*M_PI*142*pow(peb_group[i].rad[0]-0.5,0.6)*0.01*(AU_km*100000.0)*(AU_km*100000.0);
+		peb_group[i].rad[0]=(i+4)*0.25;
+		peb_group[i].mass[0]=0.01*0.01*(peb_group[i].rad[0]*peb_group[i].rad[0]-(peb_group[i].rad[0]-0.25)*(peb_group[i].rad[0]-0.25))*M_PI*142*pow(peb_group[i].rad[0]-0.5,0.6)*(AU_km*100000.0)*(AU_km*100000.0);
 		peb_group[i].time[0]=0.0;
-		printf("MASS%e\n",peb_group[i].mass);
+		printf("MASS%e\n",peb_group[i].mass[0]);
 	}
 
 }

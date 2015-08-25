@@ -707,10 +707,10 @@ int drift_t(PEBBLE *pp, double coag_eff)
 	    pp->size[ll+1]=a_pb2;
 	    pp->rad[ll+1]=x;
 	    pp->time[ll+1]=time_tot;
+	    pp->mass[ll+1]=pow(pp->size[ll+1]/pp->size[0],3)*pp->mass[0];
 	    ll++;
         
     }
-    
     
 //    printf("%0.10f\n", sum1);
 //    printf("%0.10f\n", tau_fric0(1.0,a_pb1));
@@ -721,6 +721,9 @@ int drift_t(PEBBLE *pp, double coag_eff)
     
     
 }
+       pp->max_step=ll-1;
+       //printf("MAXSTEP %f\t%f\n",pp->mass[ll],pp->mass[ll-1]);
+
     fclose(fp_vr);
     fclose(fp_drt);
     fclose(fp_size);

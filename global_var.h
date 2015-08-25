@@ -1,12 +1,14 @@
 #define time_yr 10000
-#define peb_num 10
-#define outp_time 10
-#define peb_size_num 11
+#define peb_num 40
+#define outp_time 100
+#define NUM_LIM 100
+#define peb_size_num 37
 #ifndef PEB_STRUCT
 #define PEB_STRUCT
 extern double peb_cont[100][100];
 typedef struct PEBBLE{
-	double mass;
+	int max_step;
+	double mass[time_yr];
         double rad[time_yr];
         double size[time_yr];
         double time[time_yr];
