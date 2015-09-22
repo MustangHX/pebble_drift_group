@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "global_var.h"
-#define dt 10.0  //time step in yr
+#define dt 1.0  //time step in yr
 #define output_size "peb_size.txt"
 //#define output_time "001alpha1cm100AU001AU1sun01acc.txt"
 #define output_time "drift_test0.txt"
@@ -585,15 +585,17 @@ int drift(double r_start, double a_pebble, double coag_eff)
 
 
 
-int drift_t(PEBBLE *pp, double coag_eff)
+int drift_t(PEBBLE *pp, double coag_eff, int num)
 {
 
-    int i=0,j=0,k=0,l=0,ll=0;
-    FILE *fp_vr,*fp_drt,*fp_size;
+    int i=0,j=0,k=0,l=0,ll=0,zone_num1,zone_num2;
+    FILE *fp_vr,*fp_peb,*fp_size;
+    char output_peb[256];
     fp_vr=fopen("drift_velocity", "w");
-    fp_drt=fopen(output_time,"w");
+    sprintf(output_peb,"pebble_num_%d.txt",num);
+    fp_peb=fopen(output_peb,"w");
     fp_size=fopen(output_size,"w");
-    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,tmp1,tmp2,time_tot=0.0;;
+    double x0,x1,x,x_cut,x_stop,y,Re1,Re2,vr0,vr1,vr2,a_pb1,a_pb2,tau,vol_plus,tmp1,tmp2,time_tot=0.0,ring_area,ring_area0,ring_area_all,ring_mass,budget,massplus;
     double k1,k2,k3,k4,step,sum1=0.0;
     x0=pp->rad[0];
     
@@ -687,10 +689,37 @@ int drift_t(PEBBLE *pp, double coag_eff)
             k3=1.0/vr1;
             k4=1.0/vr2;
             y=y+step*(k1+2*k2+2*k3+k4)/6.0;
+	    pp->vr[ll]=vr0;
+	    pp->size[ll]=a_pb1;
+	    pp->rad[ll]=x;
+	    pp->time[ll]=time_tot;
+	    pp->mass[ll]=pow(pp->size[ll]/pp->size[0],3)*pp->mass[0];
+	    zone_num1=floor(x/dust_budget[0].dr);
+
 	    x+=-vr0*dt/AU_km*yr_sec;
+
+	    zone_num2=floor(x/dust_budget[0].dr);
+	    if(zone_num2==zone_num1) {
+	    	ring_area=(AU_km*100000.0)*(AU_km*100000.0)*M_PI*((x+vr0*dt/AU_km*yr_sec)*(x+vr0*dt/AU_km*yr_sec)-x*x);
+	    	budget=dust_budget[zone_num1].surf_dens*ring_area;
+	    }
+	    else{
+		    budget=0.0;
+		    for(i=zone_num1-1;i>zone_num2;i--){
+			    ring_area=(dust_budget[i].rad+0.125)*(dust_budget[i].rad+0.125)-(dust_budget[i].rad-0.125)*(dust_budget[i].rad-0.125);
+			    ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+			    budget+=dust_budget[i].surf_dens*ring_area;
+		    }
+		    ring_area=(x+vr0*dt/AU_km*yr_sec)*(x+vr0*dt/AU_km*yr_sec)-(dust_budget[zone_num1].rad-0.125)*(dust_budget[zone_num1].rad-0.125);
+		    ring_area=ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		    budget+=dust_budget[zone_num1].surf_dens*ring_area;
+		    ring_area=(dust_budget[zone_num2].rad+0.125)*(dust_budget[zone_num2].rad+0.125)-x*x;
+		    ring_area=ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		    budget+=dust_budget[zone_num2].surf_dens*ring_area;
+	    }
 	    time_tot=time_tot+dt;
             fprintf(fp_vr, "%f\t%f\n",x,vr0);
-            fprintf(fp_drt, "%f\t%f\n",x,-1.0*sum1*AU_km/yr_sec);
+            //fprintf(fp_drt, "%f\t%f\n",x,-1.0*sum1*AU_km/yr_sec);
             fprintf(fp_size,"%f\t%f\n",x,a_pb1);
             if (a_pb1>9.0/4.0*mean_path(x)) {
               //  l++;
@@ -703,13 +732,74 @@ int drift_t(PEBBLE *pp, double coag_eff)
             vol_plus=1.0*M_PI*a_pb1*a_pb1*sqrt(vr0*vr0+0.25*tau*vr0*tau*vr0)*dt*yr_sec*AU_km;
 	   // if (0) vol_plus=0.0;
             a_pb2=pow(((vol_plus*coag_eff*density(x)/rho_peb0+4.0/3.0*M_PI*a_pb1*a_pb1*a_pb1)*3.0/4.0/M_PI),0.33333333333333333);
-            pp->vr[ll]=vr0;
+	    massplus=(pow(a_pb2/pp->size[0],3)-pow(a_pb1/pp->size[0],3))*pp->mass[0];
+	    
+	if(zone_num1==zone_num2){
+		ring_area0=(dust_budget[zone_num1].rad+0.125)*(dust_budget[zone_num1].rad+0.125)-(dust_budget[zone_num1].rad-0.125)*(dust_budget[zone_num1].rad-0.125);
+		ring_area0=ring_area0*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		ring_mass=dust_budget[zone_num1].surf_dens*ring_area0;
+		if(massplus<=budget){
+			ring_mass=ring_mass-massplus;
+			dust_budget[zone_num1].surf_dens=ring_mass/ring_area0;
+		}
+		else{
+			ring_mass=ring_mass-budget;
+			dust_budget[zone_num1].surf_dens=ring_mass/ring_area0;
+			a_pb2=pow(budget/massplus,0.333333333333)*a_pb2;
+		}
+	}
+	else{
+		ring_area_all=(x+vr0*dt/AU_km*yr_sec)*(x+vr0*dt/AU_km*yr_sec)-x*x;
+		ring_area_all=ring_area_all*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		for(i=zone_num1-1;i>zone_num2;i--){
+			ring_area=(dust_budget[i].rad+0.125)*(dust_budget[i].rad+0.125)-(dust_budget[i].rad-0.125)*(dust_budget[i].rad-0.125);
+	        	ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+			ring_mass=ring_area*dust_budget[i].surf_dens;
+			if(massplus<=budget) {
+				ring_mass=ring_mass-massplus*ring_area/ring_area_all;
+				if (ring_mass<0.0) ring_mass=0.0;
+			}
+			else ring_mass=0.0;
+			dust_budget[i].surf_dens=ring_mass/ring_area;
+		}
+		ring_area=(x+vr0*dt/AU_km*yr_sec)*(x+vr0*dt/AU_km*yr_sec)-(dust_budget[zone_num1].rad-0.125)*(dust_budget[zone_num1].rad-0.125);
+		ring_area=ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		ring_area0=(dust_budget[zone_num1].rad+0.125)*(dust_budget[zone_num1].rad+0.125)-(dust_budget[zone_num1].rad-0.125)*(dust_budget[zone_num1].rad-0.125);
+		ring_area0=ring_area0*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+                ring_mass=dust_budget[zone_num1].surf_dens*ring_area0;
+		if(massplus<=budget){
+			ring_mass=ring_mass-massplus*ring_area/ring_area_all;
+			if (ring_mass<0.0) ring_mass=0.0;
+	    	        }
+		else {
+			ring_mass=ring_mass-budget*ring_area/ring_area_all;                                             if (ring_mass<0.0) ring_mass=0.0;
+		}
+                dust_budget[zone_num1].surf_dens=ring_mass/ring_area;
+
+		ring_area=(dust_budget[zone_num2].rad+0.125)*(dust_budget[zone_num2].rad+0.125)-x*x;
+		ring_area=ring_area*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+		ring_area0=(dust_budget[zone_num2].rad+0.125)*(dust_budget[zone_num2].rad+0.125)-(dust_budget[zone_num2].rad-0.125)*(dust_budget[zone_num2].rad-0.125);
+		ring_area0=ring_area0*(AU_km*100000.0)*(AU_km*100000.0)*M_PI;
+                ring_mass=dust_budget[zone_num2].surf_dens*ring_area0;
+		if(massplus<=budget){
+			ring_mass=ring_mass-massplus*ring_area/ring_area_all;
+			if (ring_mass<0.0) ring_mass=0.0;
+	    	        }
+		else {
+			ring_mass=ring_mass-budget*ring_area/ring_area_all;                                             if (ring_mass<0.0) ring_mass=0.0;
+		}
+		dust_budget[zone_num2].surf_dens=ring_mass/ring_area;
+		if(massplus>budget) 	a_pb2=pow(budget/massplus,0.333333333333)*a_pb2;
+	}
+		
+	    
+/*            pp->vr[ll]=vr0;
 	    pp->size[ll+1]=a_pb2;
 	    pp->rad[ll+1]=x;
 	    pp->time[ll+1]=time_tot;
-	    pp->mass[ll+1]=pow(pp->size[ll+1]/pp->size[0],3)*pp->mass[0];
+	    pp->mass[ll+1]=pow(pp->size[ll+1]/pp->size[0],3)*pp->mass[0];*/
+//            fprintf(fp_peb,"%2.12g\t%2.12g\t%2.12g\t%2.12g\n",pp->rad[ll],pp->time[ll],pp->size[ll],pp->mass[ll]);
 	    ll++;
-        
     }
     
 //    printf("%0.10f\n", sum1);
@@ -725,7 +815,7 @@ int drift_t(PEBBLE *pp, double coag_eff)
        //printf("MAXSTEP %f\t%f\n",pp->mass[ll],pp->mass[ll-1]);
 
     fclose(fp_vr);
-    fclose(fp_drt);
+    fclose(fp_peb);
     fclose(fp_size);
     
     

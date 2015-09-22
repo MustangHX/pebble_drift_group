@@ -2,7 +2,7 @@
 #define peb_num 40
 #define outp_time 100
 #define NUM_LIM 100
-#define peb_size_num 37
+#define peb_size_num 41
 #ifndef PEB_STRUCT
 #define PEB_STRUCT
 extern double peb_cont[100][100];
@@ -23,6 +23,12 @@ typedef struct PEBBLE_MAP{
         double surf_dens[peb_size_num];
 } PEBBLE_MAP;
 
+typedef struct DUST_MAP{
+        double dr;
+        double rad;
+        double surf_dens;
+} DUST_MAP;
 extern PEBBLE peb_group[peb_num];
 extern PEBBLE_MAP peb_mapping[outp_time][peb_num];
+extern DUST_MAP dust_budget[peb_num];
 #endif
